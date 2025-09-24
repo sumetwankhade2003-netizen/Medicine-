@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>College Medicine Share</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f0f8ff;
+            text-align: center;
+        }
+        h1 {
+            color: #1e90ff;
+        }
+        h2 {
+            color: #2f4f4f;
+        }
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        input[type="text"], input[type="date"] {
+            width: 100%;
+            padding: 8px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            background: #1e90ff;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #4682b4;
+        }
+        #medicineList {
+            list-style: none;
+            padding: 0;
+        }
+        #medicineList li {
+            background: #f5f5f5;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 4px;
+            border-left: 4px solid #1e90ff;
+        }
+        #searchInput {
+            width: 100%;
+            padding: 8px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>College Medicine Share</h1>
+        <p>Share medicines you don't need or find ones you do! (Demo: Data stays in your browser.)</p>
+        <p><strong>Note:</strong> Consult your college health center before sharing medicines.</p>
+
+        <h2>Share a Medicine</h2>
+        <form id="shareForm">
+            <input type="text" id="medicineName" placeholder="Medicine Name" required>
+            <input type="text" id="quantity" placeholder="Quantity (e.g., 5 tablets)" required>
+            <input type="date" id="expiryDate" required>
+            <input type="text" id="contact" placeholder="Your Contact (e.g., email)" required>
+            <button type="submit">Share Medicine</button>
+        </form>
+
+        <h2>Find Medicines</h2>
+        <input type="text" id="searchInput" placeholder="Search by Medicine Name">
+
+        <h2>Available Medicines</h2>
+        <ul id="medicineList"></ul>
+    </div>
+
+    <script>
+        let medicines = JSON.parse(localStorage.getItem('collegeMedicines')) || [];
+
+        function displayMedicines(filter = '') {
+            const list = document.getElementById('medicineList');
+            list.innerHTML = '';
+            medicines
+                .filter(med => med.name.toLowerCase().includes(filter.toLowerCase()))
+                .forEach(med => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `
+                        <strong>${med.name}</strong><br>
+                        Quantity: ${med.quantity}<br>
+                        Expiry: ${med.expiry}<br>
+                        Contact: ${med.contact}
+                    `;
+                    list.appendChild(li);
+                });
+        }
+
+        displayMedicines();
+
+        document.getElementById('shareForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const name = document.getElementById('medicineName').value;
+            const quantity = document.getElementById('quantity').value;
+            const expiry = document.getElementById('expiryDate').value;
+            const contact = document.getElementById('contact').value;
+
+            const today = new Date().toISOString().split('T')[0];
+            if (expiry < today) {
+                alert('Cannot share expired medicines!');
+                return;
+            }
+
+            medicines.push({ name, quantity, expiry, contact });
+            localStorage.setItem('collegeMedicines', JSON.stringify(medicines));
+            displayMedicines();
+            this.reset();
+        });
+
+        document.getElementById('searchInput').addEventListener('input', function() {
+            displayMedicines(this.value);
+        });
+    </script>
+</body>
+</html>
